@@ -1,0 +1,31 @@
+# meetme .htaccess template
+
+# Set default index
+DirectoryIndex index.php
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect sensitive directories and files
+RewriteEngine On
+
+# Deny direct access to data folders and sensitive PHP files
+RewriteRule ^(cache|bookings|invites|vendor|lib\.php|config\.php|lang\.php)($|/) - [F,L]
+
+# Protect admin.php with Basic Auth
+# 1. Generate a .htpasswd file
+# 2. Uncomment the lines below and update the AuthUserFile path
+# <Files "admin.php">
+#     AuthType Basic
+#     AuthName "meetme admin"
+#     AuthUserFile /absolute/path/to/your/.htpasswd
+#     Require valid-user
+# </Files>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none';"
+    Header set X-Frame-Options "DENY"
+    Header set X-Content-Type-Options "nosniff"
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>

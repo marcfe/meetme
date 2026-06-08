@@ -1,0 +1,22 @@
+# meetme .gitignore
+
+# Dependencies
+/vendor/
+
+# Local configuration
+config.php
+.htpasswd
+
+# Data and Cache (Flat files)
+/bookings/*.json
+/cache/*.ics
+/cache/*.etag
+/cache/*.json
+/invites/*.json
+
+# Temporary files
+*.tmp
+.DS_Store
+
+# Tools
+debug_mail.php
