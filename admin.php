@@ -106,7 +106,7 @@ if ($edit_token && isset($invites[$edit_token])) {
 <head>
     <meta charset="UTF-8">
     <title>Admin — meetme</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
     <style>
         body { max-width: 1000px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }

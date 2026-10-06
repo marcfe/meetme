@@ -25,6 +25,7 @@ $L = [
         'dinner' => 'Znacht',
         'meeting_with' => '%s mit %s',
         'note' => 'Notiz (optional)',
+        'all' => 'Aui',
         'back' => 'Zrügg',
         'rate_limit_exceeded' => 'Grad chli viu Afrage uf einisch. Probier es später nomau.',
         'invalid_email' => 'Dini E-Mail-Adrässe gseht irgendwie nid ganz richtig us.',

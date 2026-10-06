@@ -17,6 +17,10 @@ config.php
 # Temporary files
 *.tmp
 .DS_Store
+/.phpunit.cache
 
 # Tools
 debug_mail.php
+/memory-bank
+tailwindcss-macos-arm64
+tailwindcss
