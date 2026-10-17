@@ -17,7 +17,8 @@ Most booking systems are heavy, require a database, and often force you into a s
 - **Multi-language**: Supports Bärndütsch (Swiss German dialect), German, and English out of the box.
 - **Smart Routing**: Clean, token-based invitation links (`/?k=your-token`).
 - **Anti-Abuse**: Built-in honeypot protection and per-IP rate limiting.
-- **Admin Dashboard**: Manage invitations, block slots manually, and track bookings.
+- **Admin Dashboard**: Manage invitations, block slots manually, and track bookings, all in a mobile-optimized interface.
+- **Modern Unified UI**: Built entirely with a locally compiled Tailwind CSS setup to bypass aggressive browser adblockers.
 - **Zero Cron Jobs**: Everything happens on-request.
 
 ## Installation
@@ -51,7 +52,7 @@ Most booking systems are heavy, require a database, and often force you into a s
 ### Add Bookable Slots
 Just create events in your iCloud calendar. The app will automatically see them as free slots.
 - **Tags**: To make a slot private, add `#tagname` to the event title (e.g., "Dinner #anna"). In the admin panel, create an invite with the tag `anna` to reveal these slots.
-- **Labels**: Use labels like "Lunch" or "Dinner" in your event titles. They will be automatically translated into the guest's preferred language.
+- **Labels**: Use labels like "Lunch", "Dinner", or "Daytime" in your event titles. They will be automatically translated into the guest's preferred language.
 
 ### Managing Invitations
 Access `admin.php` to generate unique invite links. You can choose between:
