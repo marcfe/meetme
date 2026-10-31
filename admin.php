@@ -3,6 +3,77 @@ require_once __DIR__ . '/lib.php';
 
 session_start();
 
+// Logout
+if (isset($_GET['logout'])) {
+    unset($_SESSION['admin_logged_in']);
+    header('Location: /admin');
+    exit;
+}
+
+// Login process
+$login_error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_password'])) {
+    if (defined('ADMIN_PASS') && $_POST['login_password'] === ADMIN_PASS) {
+        $_SESSION['admin_logged_in'] = true;
+        header('Location: /admin');
+        exit;
+    } else {
+        $login_error = 'Invalid password.';
+    }
+}
+
+if (empty($_SESSION['admin_logged_in'])) {
+    // Show Tailwind login form
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Admin Login - meetme</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="meetme">
+    <meta name="theme-color" content="#111827">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon.svg">
+    <link href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+    <div class="bg-white p-8 md:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 max-w-sm w-full">
+        <div class="flex justify-center mb-6">
+            <div class="h-14 w-14 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+        </div>
+        <h1 class="text-2xl font-bold mb-2 text-center text-gray-900">Welcome Back</h1>
+        <p class="text-center text-sm text-gray-500 mb-8">Enter your password to access the dashboard</p>
+        
+        <?php if ($login_error): ?>
+            <div class="bg-red-50 text-red-600 p-3 rounded-xl mb-6 text-sm font-medium text-center border border-red-100"><?= htmlspecialchars($login_error) ?></div>
+        <?php endif; ?>
+        
+        <form method="POST" action="?">
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <div class="relative">
+                    <input type="password" name="login_password" class="w-full pl-4 pr-10 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white transition-all duration-200 outline-none" placeholder="••••••••" required autofocus>
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-gray-900 text-white font-medium py-3 px-4 rounded-xl hover:bg-black transition-all duration-200 shadow-sm hover:shadow-md transform active:scale-[0.98]">
+                Log In to Admin
+            </button>
+        </form>
+    </div>
+</body>
+</html>
+<?php
+    exit;
+}
+
 // CSRF
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -150,15 +221,40 @@ if ($edit_token && isset($invites[$edit_token])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Admin — meetme</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="meetme">
+    <meta name="theme-color" content="#111827">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon.svg">
     <link href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>" rel="stylesheet">
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
     <div class="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
         <header class="flex justify-between items-center border-b border-gray-200 pb-4">
             <h1 class="text-2xl font-bold">meetme Admin</h1>
+            <div class="flex items-center gap-4">
+                <?php $feed_token = hash('sha256', ADMIN_PASS . ':meetme-feed'); ?>
+                <button type="button" onclick="copyFeedUrl(this)" data-url="<?= h(((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/feed?t=' . $feed_token) ?>" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors" title="Copy calendar feed URL (ICS)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Cal Feed
+                </button>
+                <a href="?logout=1" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Log Out</a>
+            </div>
         </header>
+        <script>
+        function copyFeedUrl(btn) {
+            navigator.clipboard.writeText(btn.dataset.url).then(() => {
+                const orig = btn.innerHTML;
+                btn.textContent = 'Copied!';
+                btn.classList.add('text-green-600');
+                setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('text-green-600'); }, 2000);
+            });
+        }
+        </script>
 
         <?php if ($message): ?>
             <div class="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 shadow-sm mb-6">
@@ -194,7 +290,7 @@ if ($edit_token && isset($invites[$edit_token])) {
             <section class="lg:col-span-1">
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 md:p-6 sticky top-6">
                     <h2 class="text-lg font-semibold mb-4 text-gray-800"><?= $edit_token ? 'Edit' : 'Create' ?> Invite</h2>
-                    <form method="POST" action="admin.php" class="space-y-4">
+                    <form method="POST" action="?" class="space-y-4">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                         <input type="hidden" name="action" value="<?= $edit_token ? 'update_invite' : 'create_invite' ?>">
                         <?php if ($edit_token): ?>
@@ -245,7 +341,7 @@ if ($edit_token && isset($invites[$edit_token])) {
                                 <?= $edit_token ? 'Update' : 'Generate' ?> Invite
                             </button>
                             <?php if ($edit_token): ?>
-                                <a href="admin.php" class="mt-3 block text-center text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel Edit</a>
+                                <a href="?" class="mt-3 block text-center text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel Edit</a>
                             <?php endif; ?>
                         </div>
                     </form>
@@ -261,7 +357,7 @@ if ($edit_token && isset($invites[$edit_token])) {
                         <?php if ($hidden_count > 0 && !$show_all_invites): ?>
                             <a href="?show_all=1" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Show <?= $hidden_count ?> hidden</a>
                         <?php elseif ($show_all_invites): ?>
-                            <a href="admin.php" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Hide older</a>
+                            <a href="?" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Hide older</a>
                         <?php endif; ?>
                     </div>
                     <div class="overflow-x-auto">

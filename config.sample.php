@@ -21,6 +21,7 @@ define('SMTP_PASS', 'YOUR_PASSWORD_HERE');
 define('SMTP_SECURE', 'tls'); // 'tls' or 'ssl'
 
 // Application Settings
+define('ADMIN_PASS', 'YOUR_STRONG_PASSWORD');
 define('CACHE_TTL', 600); // 10 minutes
 define('DEFAULT_HORIZON_DAYS', 30);
 define('DEFAULT_COOLDOWN_DAYS', 42); // 6 weeks
