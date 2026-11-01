@@ -59,6 +59,9 @@ $slots = array_slice(get_slots(), 0, 3);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= h($t['title']) ?> — meetme</title>
+    <meta property="og:title" content="<?= h($t['title']) ?>">
+    <meta property="og:description" content="<?= h($t['subtitle']) ?>">
+    <meta property="og:type" content="website">
     <link rel="stylesheet" href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>">
     <script>let t=localStorage.getItem('theme');(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches))&&document.documentElement.classList.add('dark')</script>
 </head>

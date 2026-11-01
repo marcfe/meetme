@@ -15,6 +15,7 @@ RewriteRule ^(cache|bookings|invites|vendor|lib\.php|config\.php|lang\.php)($|/)
 # Clean URL for admin and feed
 RewriteRule ^admin$ admin.php [L,QSA]
 RewriteRule ^feed$ feed.php [L,QSA]
+RewriteRule ^cancel$ cancel.php [L,QSA]
 
 # Security Headers
 <IfModule mod_headers.c>

@@ -307,6 +307,48 @@ if ($edit_token && isset($invites[$edit_token])) {
         }
         </script>
 
+        <?php
+        $upcoming_bookings = array_filter($bookings, function($b) use ($active_uids) {
+            return ($b['status'] ?? '') === 'booked' && in_array($b['uid'], $active_uids);
+        });
+        $active_invite_count = count(array_filter($invites, function($inv) {
+            return empty($inv['revoked']) && empty($inv['consumed_at']);
+        }));
+        $free_slot_count = count(array_filter($admin_slots, function($s) { return !$s['is_blocked']; }));
+        $next_meeting = null;
+        foreach ($upcoming_bookings as $b) {
+            if (!empty($b['slot_start'])) {
+                $s = new DateTime($b['slot_start']);
+                if (!$next_meeting || $s < $next_meeting['start']) {
+                    $next_meeting = ['start' => $s, 'name' => $b['name'], 'summary' => $b['slot_summary'] ?? ''];
+                }
+            }
+        }
+        ?>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                <div class="text-2xl font-bold text-gray-900 dark:text-gray-100"><?= count($upcoming_bookings) ?></div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Upcoming bookings</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                <div class="text-2xl font-bold text-gray-900 dark:text-gray-100"><?= $active_invite_count ?></div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Active invites</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                <div class="text-2xl font-bold text-gray-900 dark:text-gray-100"><?= $free_slot_count ?></div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Free slots</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                <?php if ($next_meeting): ?>
+                    <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate"><?= h($next_meeting['summary']) ?> — <?= h($next_meeting['name']) ?></div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400"><?= h(format_date($next_meeting['start'])) ?></div>
+                <?php else: ?>
+                    <div class="text-sm text-gray-400 dark:text-gray-500">No upcoming meetings</div>
+                <?php endif; ?>
+                <div class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Next meeting</div>
+            </div>
+        </div>
+
         <?php if ($message): ?>
             <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 rounded-xl p-4 shadow-sm mb-6">
                 <p class="font-medium"><?= h($message) ?></p>

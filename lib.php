@@ -279,6 +279,7 @@ function send_booking_email($guest_email, $slot, $booking) {
         $guest_body .= "When: " . format_date($slot['start']) . "\n";
         $guest_body .= "Where: " . $slot['location'] . "\n\n";
         $guest_body .= "Host: " . OWNER_NAME . "\n";
+        $guest_body .= "\nNeed to cancel? " . get_cancel_url($slot['uid']) . "\n";
         
         send_single_ics_mail($guest_email, $booking['name'], $guest_summary, $guest_body, $slot, $booking, false);
     }
@@ -418,6 +419,39 @@ function send_cancellation_email($booking) {
     } catch (Exception $e) {
         error_log("Cancellation Mail Error: " . $mail->ErrorInfo);
     }
+}
+
+function generate_cancel_token($uid) {
+    return hash_hmac('sha256', $uid, ADMIN_PASS . ':cancel');
+}
+
+function get_cancel_url($uid) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    return $protocol . '://' . $host . '/cancel?uid=' . urlencode($uid) . '&sig=' . generate_cancel_token($uid);
+}
+
+function fire_webhook($booking, $slot) {
+    if (!defined('WEBHOOK_URL') || empty(WEBHOOK_URL)) return;
+
+    $payload = json_encode([
+        'event' => 'booking_created',
+        'name' => $booking['name'],
+        'email' => $booking['email'],
+        'slot_summary' => $slot['summary'],
+        'slot_start' => $slot['start']->format('c'),
+        'slot_location' => $slot['location'],
+        'note' => $booking['note'],
+    ]);
+
+    $ch = curl_init(WEBHOOK_URL);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_exec($ch);
+    curl_close($ch);
 }
 
 function get_all_slots_admin() {

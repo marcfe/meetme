@@ -111,6 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         // Send Mail
                         send_booking_email($email, $chosen_slot, $booking_data);
+                        fire_webhook($booking_data, $chosen_slot);
                         $success = true;
                     } else {
                         $error = $t['slot_taken'];
@@ -131,6 +132,9 @@ $slots = get_slots($invite);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= h($t['title']) ?></title>
+    <meta property="og:title" content="Meet <?= h(OWNER_NAME) ?>">
+    <meta property="og:description" content="<?= h(strip_tags($invite['greeting'] ?: $t['invite_greeting'])) ?> — <?= h($t['subtitle']) ?>">
+    <meta property="og:type" content="website">
     <link rel="stylesheet" href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>">
     <script>let t=localStorage.getItem('theme');(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches))&&document.documentElement.classList.add('dark')</script>
     <style>
