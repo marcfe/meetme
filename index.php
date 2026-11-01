@@ -60,6 +60,7 @@ $slots = array_slice(get_slots(), 0, 3);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= h($t['title']) ?> — meetme</title>
     <link rel="stylesheet" href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>">
+    <script>let t=localStorage.getItem('theme');(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches))&&document.documentElement.classList.add('dark')</script>
 </head>
 <body class="min-h-screen flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">

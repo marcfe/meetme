@@ -132,15 +132,14 @@ $slots = get_slots($invite);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= h($t['title']) ?></title>
     <link rel="stylesheet" href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>">
+    <script>let t=localStorage.getItem('theme');(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches))&&document.documentElement.classList.add('dark')</script>
     <style>
         .slot-radio input:checked + label {
             border-color: #4f46e5;
             background-color: #f9fafb;
         }
-        @media (prefers-color-scheme: dark) {
-            .slot-radio input:checked + label {
-                background-color: #1e1b4b;
-            }
+        .dark .slot-radio input:checked + label {
+            background-color: #1e1b4b;
         }
     </style>
 </head>
