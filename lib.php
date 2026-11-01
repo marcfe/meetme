@@ -363,6 +363,63 @@ function send_request_email($name, $email, $message, $slot_summary, $slot_time) 
     }
 }
 
+function send_cancellation_email($booking) {
+    if (empty($booking['email'])) return;
+
+    $guest = $booking['name'];
+    $when = !empty($booking['slot_start']) ? format_date(new \DateTime($booking['slot_start'])) : 'your upcoming meeting';
+    $summary = $booking['slot_summary'] ?? 'Meeting';
+
+    $subject = "Cancelled: $summary ($when)";
+    $body = "Hi $guest,\n\n";
+    $body .= "Unfortunately, the following meeting has been cancelled:\n\n";
+    $body .= "What: $summary\n";
+    $body .= "When: $when\n";
+    if (!empty($booking['slot_location'])) {
+        $body .= "Where: " . $booking['slot_location'] . "\n";
+    }
+    $body .= "\nSorry for any inconvenience.\n\n— " . OWNER_NAME;
+
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host       = SMTP_HOST;
+        $mail->SMTPAuth   = !empty(SMTP_USER);
+        $mail->Username   = SMTP_USER;
+        $mail->Password   = SMTP_PASS;
+        $mail->SMTPSecure = SMTP_SECURE;
+        $mail->Port       = SMTP_PORT;
+        $mail->CharSet    = 'UTF-8';
+
+        $mail->setFrom(FROM_EMAIL, OWNER_NAME);
+        if (defined('REPLY_TO') && !empty(REPLY_TO)) {
+            $mail->addReplyTo(REPLY_TO, OWNER_NAME);
+        }
+        $mail->addAddress($booking['email'], $guest);
+
+        $mail->isHTML(false);
+        $mail->Subject = $subject;
+        $mail->Body = $body;
+
+        // ICS cancellation
+        $vcal = new VObject\Component\VCalendar(['METHOD' => 'CANCEL']);
+        $vcal->add('VEVENT', [
+            'SUMMARY' => 'Cancelled: ' . $summary,
+            'UID' => $booking['uid'],
+            'SEQUENCE' => 100,
+            'STATUS' => 'CANCELLED',
+            'DTSTART' => !empty($booking['slot_start']) ? new \DateTime($booking['slot_start']) : new \DateTime(),
+            'DTEND' => !empty($booking['slot_end']) ? new \DateTime($booking['slot_end']) : (new \DateTime())->modify('+1 hour'),
+            'ORGANIZER' => 'mailto:' . OWNER_EMAIL,
+        ]);
+        $mail->addStringAttachment($vcal->serialize(), 'cancel.ics', 'base64', 'text/calendar; method=CANCEL');
+
+        $mail->send();
+    } catch (Exception $e) {
+        error_log("Cancellation Mail Error: " . $mail->ErrorInfo);
+    }
+}
+
 function get_all_slots_admin() {
     $ics = get_calendar_data();
     if (!$ics) return [];

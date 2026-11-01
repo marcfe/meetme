@@ -4,20 +4,29 @@ require_once __DIR__ . '/lib.php';
 $token = $_GET['k'] ?? '';
 $invite_file = __DIR__ . '/invites/' . preg_replace('/[^a-zA-Z0-9_-]/', '', $token) . '.json';
 
+function error_page($title, $message, $code = 404) {
+    header("HTTP/1.1 $code");
+    echo '<!DOCTYPE html><html lang="en" class="bg-gray-50 dark:bg-gray-900"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' . htmlspecialchars($title) . '</title><link rel="stylesheet" href="style.css?v=' . filemtime(__DIR__ . '/style.css') . '"></head>';
+    echo '<body class="min-h-screen flex items-center justify-center p-4"><div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-sm w-full text-center">';
+    echo '<div class="text-4xl mb-4">:(</div>';
+    echo '<h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">' . htmlspecialchars($title) . '</h1>';
+    echo '<p class="text-gray-500 dark:text-gray-400">' . htmlspecialchars($message) . '</p>';
+    echo '</div></body></html>';
+    exit;
+}
+
 if (empty($token) || !file_exists($invite_file)) {
-    header("HTTP/1.1 404 Not Found");
-    die("<h1>404 Not Found</h1>");
+    error_page('Not Found', 'This link doesn\'t exist or has expired.');
 }
 
 $invite = json_decode(file_get_contents($invite_file), true);
 
 if (($invite['revoked'] ?? false) === true) {
-    header("HTTP/1.1 404 Not Found");
-    die("<h1>404 Not Found</h1>");
+    error_page('Link Expired', 'This invite has been revoked.');
 }
 
 if (($invite['mode'] ?? 'single') === 'single' && !empty($invite['consumed_at'])) {
-    die("<h1>" . h($t['back']) . "</h1><p>This link has already been used.</p>");
+    error_page($t['back'], 'This link has already been used.');
 }
 
 $error = false;
@@ -81,7 +90,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'email' => $email,
                         'note' => $note,
                         'invite_token' => $token,
-                        'at' => date('c')
+                        'at' => date('c'),
+                        'slot_start' => $chosen_slot['start']->format('c'),
+                        'slot_end' => $chosen_slot['end']->format('c'),
+                        'slot_summary' => $chosen_slot['summary'],
+                        'slot_location' => $chosen_slot['location'],
                     ];
                     
                     // Atomic booking
@@ -113,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $slots = get_slots($invite);
 ?>
 <!DOCTYPE html>
-<html lang="<?= $lang ?>" class="bg-gray-50 text-gray-900 antialiased">
+<html lang="<?= $lang ?>" class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,13 +137,18 @@ $slots = get_slots($invite);
             border-color: #4f46e5;
             background-color: #f9fafb;
         }
+        @media (prefers-color-scheme: dark) {
+            .slot-radio input:checked + label {
+                background-color: #1e1b4b;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
         <div class="px-6 py-8">
             <header class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                <h1 class="text-2xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight leading-tight">
                     <?= nl2br(h($invite['greeting'] ?: $t['invite_greeting'])) ?>
                 </h1>
                 <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg ml-4 flex-shrink-0">
@@ -140,28 +158,28 @@ $slots = get_slots($invite);
                 </div>
             </header>
 
-            <h2 class="text-lg font-semibold text-gray-700 mb-1"><?= h($t['title']) ?></h2>
-            <p class="text-gray-500 mb-8"><?= h($t['subtitle']) ?></p>
+            <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1"><?= h($t['title']) ?></h2>
+            <p class="text-gray-500 dark:text-gray-400 mb-8"><?= h($t['subtitle']) ?></p>
 
             <?php if ($success): ?>
-                <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-4 rounded-lg shadow-sm">
+                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-4 rounded-lg shadow-sm">
                     <strong class="font-medium text-lg block mb-1"><?= h($t['booking_success']) ?></strong>
                     <?= h($t['booking_confirmation']) ?>
                 </div>
             <?php elseif ($cooldown_hit): ?>
-                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-lg shadow-sm">
+                <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-4 rounded-lg shadow-sm">
                     <?= h($cooldown_hit) ?>
                 </div>
             <?php else: ?>
                 <?php if ($error): ?>
-                    <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg shadow-sm">
+                    <div class="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg shadow-sm">
                         <?= h($error) ?>
                     </div>
                 <?php endif; ?>
 
                 <?php if (empty($slots)): ?>
-                    <div class="bg-gray-50 rounded-lg p-6 text-center border border-gray-100">
-                        <p class="text-gray-500"><?= h($t['no_slots']) ?></p>
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-center border border-gray-100 dark:border-gray-600">
+                        <p class="text-gray-500 dark:text-gray-400"><?= h($t['no_slots']) ?></p>
                     </div>
                 <?php else: ?>
                     <?php $unique_summaries = array_unique(array_column($slots, 'summary')); ?>
@@ -183,10 +201,10 @@ $slots = get_slots($invite);
                                 <?php foreach ($slots as $slot): ?>
                                     <div class="slot-radio relative slot-item" data-summary="<?= h($slot['summary']) ?>">
                                         <input type="radio" name="slot_uid" value="<?= h($slot['uid']) ?>" id="slot_<?= h(sha1($slot['uid'])) ?>" required class="peer sr-only">
-                                        <label for="slot_<?= h(sha1($slot['uid'])) ?>" class="block bg-white border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm">
+                                        <label for="slot_<?= h(sha1($slot['uid'])) ?>" class="block bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
                                             <div class="flex justify-between items-start">
-                                                <div class="font-semibold text-gray-900 peer-checked:text-indigo-800"><?= h(format_date($slot['start'])) ?></div>
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                <div class="font-semibold text-gray-900 dark:text-gray-100 peer-checked:text-indigo-800"><?= h(format_date($slot['start'])) ?></div>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
                                                     <?= h($slot['summary']) ?>
                                                 </span>
                                             </div>
@@ -205,18 +223,18 @@ $slots = get_slots($invite);
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1"><?= h($t['name']) ?></label>
-                            <input type="text" name="name" value="<?= h($invite['label'] ?? '') ?>" required class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border bg-white">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= h($t['name']) ?></label>
+                            <input type="text" name="name" value="<?= h($invite['label'] ?? '') ?>" required class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border bg-white dark:bg-gray-700 dark:text-gray-100">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1"><?= h($t['email']) ?> <span class="text-gray-400 font-normal">(optional)</span></label>
-                            <input type="email" name="email" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border bg-white">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= h($t['email']) ?> <span class="text-gray-400 font-normal">(optional)</span></label>
+                            <input type="email" name="email" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border bg-white dark:bg-gray-700 dark:text-gray-100">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1"><?= h($t['note']) ?></label>
-                            <textarea name="note" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border bg-white"></textarea>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= h($t['note']) ?></label>
+                            <textarea name="note" rows="3" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border bg-white dark:bg-gray-700 dark:text-gray-100"></textarea>
                         </div>
 
                         <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">

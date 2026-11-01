@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && PUBLIC_REQUESTS_ENABLED) {
 $slots = array_slice(get_slots(), 0, 3);
 ?>
 <!DOCTYPE html>
-<html lang="<?= $lang ?>" class="bg-gray-50 text-gray-900 antialiased">
+<html lang="<?= $lang ?>" class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -62,10 +62,10 @@ $slots = array_slice(get_slots(), 0, 3);
     <link rel="stylesheet" href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>">
 </head>
 <body class="min-h-screen flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
         <div class="px-6 py-8">
             <header class="flex justify-between items-center mb-6">
-                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight"><?= h($t['title']) ?></h1>
+                <h1 class="text-3xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight"><?= h($t['title']) ?></h1>
                 <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg">
                     <a href="?lang=bd" class="px-2 py-1 rounded-md text-sm transition-colors <?= $lang === 'bd' ? 'bg-white shadow-sm' : 'hover:bg-gray-200' ?>">🇨🇭</a>
                     <a href="?lang=de" class="px-2 py-1 rounded-md text-sm transition-colors <?= $lang === 'de' ? 'bg-white shadow-sm' : 'hover:bg-gray-200' ?>">🇩🇪</a>
@@ -73,25 +73,25 @@ $slots = array_slice(get_slots(), 0, 3);
                 </div>
             </header>
 
-            <p class="text-gray-500 mb-8"><?= h($t['subtitle']) ?></p>
+            <p class="text-gray-500 dark:text-gray-400 mb-8"><?= h($t['subtitle']) ?></p>
 
             <?php if ($success): ?>
-                <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg shadow-sm">
+                <div class="mb-6 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg shadow-sm">
                     <strong class="font-medium">Merci!</strong> I mäudde mi bi dir.
                 </div>
             <?php endif; ?>
 
             <?php if ($error): ?>
-                <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg shadow-sm">
+                <div class="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg shadow-sm">
                     <?= h($error) ?>
                 </div>
             <?php endif; ?>
 
             <section class="mb-10">
-                <h2 class="text-lg font-bold text-gray-900 mb-4"><?= h($t['next_slots']) ?></h2>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4"><?= h($t['next_slots']) ?></h2>
                 <?php if (empty($slots)): ?>
-                    <div class="bg-gray-50 rounded-lg p-6 text-center border border-gray-100">
-                        <p class="text-gray-500"><?= h($t['no_slots']) ?></p>
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-center border border-gray-100 dark:border-gray-600">
+                        <p class="text-gray-500 dark:text-gray-400"><?= h($t['no_slots']) ?></p>
                     </div>
                 <?php else: ?>
                     <?php $unique_summaries = array_unique(array_column($slots, 'summary')); ?>
@@ -105,10 +105,10 @@ $slots = array_slice(get_slots(), 0, 3);
                     <?php endif; ?>
                     <ul class="space-y-4">
                         <?php foreach ($slots as $slot): ?>
-                            <li data-summary="<?= h($slot['summary']) ?>" class="slot-item bg-white border-2 border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <li data-summary="<?= h($slot['summary']) ?>" class="slot-item bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
                                 <div class="flex justify-between items-start">
-                                    <div class="font-semibold text-gray-900"><?= h(format_date($slot['start'])) ?></div>
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-indigo-800">
+                                    <div class="font-semibold text-gray-900 dark:text-gray-100"><?= h(format_date($slot['start'])) ?></div>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 dark:bg-gray-700 text-indigo-800 dark:text-indigo-300">
                                         <?= h($slot['summary']) ?>
                                     </span>
                                 </div>
@@ -127,26 +127,26 @@ $slots = array_slice(get_slots(), 0, 3);
             </section>
 
             <?php if (PUBLIC_REQUESTS_ENABLED && !empty($slots)): ?>
-                <form method="POST" class="bg-gray-50 -mx-6 -mb-8 px-6 py-8 border-t border-gray-200">
-                    <h2 class="text-lg font-bold text-gray-900 mb-6"><?= h($t['request_slot']) ?></h2>
+                <form method="POST" class="bg-gray-50 dark:bg-gray-900 -mx-6 -mb-8 px-6 py-8 border-t border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6"><?= h($t['request_slot']) ?></h2>
                     
                     <!-- Honeypot -->
                     <input name="website" tabindex="-1" autocomplete="off" class="sr-only">
                     
                     <div class="space-y-5">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1"><?= h($t['name']) ?></label>
-                            <input type="text" name="name" required class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900 sm:text-sm px-3 py-2 border bg-white">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= h($t['name']) ?></label>
+                            <input type="text" name="name" required class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-gray-900 focus:ring-gray-900 sm:text-sm px-3 py-2 border bg-white dark:bg-gray-800 dark:text-gray-100">
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1"><?= h($t['email']) ?></label>
-                            <input type="email" name="email" required class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900 sm:text-sm px-3 py-2 border bg-white">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= h($t['email']) ?></label>
+                            <input type="email" name="email" required class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-gray-900 focus:ring-gray-900 sm:text-sm px-3 py-2 border bg-white dark:bg-gray-800 dark:text-gray-100">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Slot</label>
-                            <select name="slot_uid" required class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900 sm:text-sm px-3 py-2 border bg-white">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Slot</label>
+                            <select name="slot_uid" required class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-gray-900 focus:ring-gray-900 sm:text-sm px-3 py-2 border bg-white dark:bg-gray-800 dark:text-gray-100">
                                 <?php foreach ($slots as $slot): ?>
                                     <option value="<?= h($slot['uid']) ?>"><?= h(format_date($slot['start'])) ?> — <?= h($slot['summary']) ?></option>
                                 <?php endforeach; ?>
@@ -154,8 +154,8 @@ $slots = array_slice(get_slots(), 0, 3);
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1"><?= h($t['message']) ?> <span class="text-gray-400 font-normal">(optional)</span></label>
-                            <textarea name="message" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900 sm:text-sm px-3 py-2 border bg-white"></textarea>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><?= h($t['message']) ?> <span class="text-gray-400 font-normal">(optional)</span></label>
+                            <textarea name="message" rows="3" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-gray-900 focus:ring-gray-900 sm:text-sm px-3 py-2 border bg-white dark:bg-gray-800 dark:text-gray-100"></textarea>
                         </div>
                         
                         <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors">

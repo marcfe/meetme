@@ -26,8 +26,11 @@ $confirmed = [];
 foreach ($booking_files as $f) {
     $b = json_decode(file_get_contents($f), true);
     if (($b['status'] ?? '') !== 'booked') continue;
-    if (!isset($events_by_uid[$b['uid']])) continue;
-    $confirmed[] = ['booking' => $b, 'event' => $events_by_uid[$b['uid']]];
+    if (isset($events_by_uid[$b['uid']])) {
+        $confirmed[] = ['booking' => $b, 'event' => $events_by_uid[$b['uid']], 'from_ics' => true];
+    } elseif (!empty($b['slot_start'])) {
+        $confirmed[] = ['booking' => $b, 'event' => null, 'from_ics' => false];
+    }
 }
 
 $cal = new Sabre\VObject\Component\VCalendar();
@@ -39,10 +42,18 @@ foreach ($confirmed as $item) {
     $b = $item['booking'];
     $ev = $item['event'];
 
-    $start = $ev->DTSTART->getDateTime();
-    $end = isset($ev->DTEND) ? $ev->DTEND->getDateTime() : (clone $start)->modify('+1 hour');
-    $summary = (string)$ev->SUMMARY;
-    $location = (string)$ev->LOCATION;
+    if ($ev) {
+        $start = $ev->DTSTART->getDateTime();
+        $end = isset($ev->DTEND) ? $ev->DTEND->getDateTime() : (clone $start)->modify('+1 hour');
+        $summary = (string)$ev->SUMMARY;
+        $location = (string)$ev->LOCATION;
+    } else {
+        $start = new DateTime($b['slot_start']);
+        $end = new DateTime($b['slot_end']);
+        $summary = $b['slot_summary'] ?? 'Meeting';
+        $location = $b['slot_location'] ?? '';
+    }
+
     $guest_line = $b['name'] . (!empty($b['email']) ? ' (' . $b['email'] . ')' : '');
 
     $vevent = $cal->add('VEVENT', [
